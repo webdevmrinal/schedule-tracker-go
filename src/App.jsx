@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 
+import { useTimer } from "react-timer-hook";
+
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -24,11 +26,26 @@ import {
   databases,
 } from "./lib/appwrite";
 import { getRandomQuote } from "./utils";
+import CountdownTimer from "./CountdownTimer";
 
 function App() {
   const [subjects, setSubjects] = useState([]);
   const [date, setDate] = useState(new Date());
   const [scheduleItems, setScheduleItems] = useState([]);
+  const now = new Date();
+  const time = new Date();
+  time.setHours(24, 0, 0, 0);
+  const {
+    seconds,
+    minutes,
+    hours,
+    days,
+    isRunning,
+    start,
+    pause,
+    resume,
+    restart,
+  } = useTimer({ time, onExpire: () => console.warn("Timer expired") });
 
   useEffect(() => {
     const fetchScheduleItems = async () => {
@@ -98,17 +115,16 @@ function App() {
         {getCurrentDateString()}
       </div>
 
-      {!scheduleItems.length && <div className="text-2xl">{getRandomQuote()}</div>}
+      {!scheduleItems.length && (
+        <div className="text-2xl">{getRandomQuote()}</div>
+      )}
       <div className="mb-20 flex gap-8 max-h-[60vh] flex-col overflow-y-scroll md:overflow-visible md:flex-row scrollbar-thin">
         {scheduleItems.map((item, index) => (
           <SubjectCard key={item.$id} data={item} index={index} />
         ))}
       </div>
 
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-center">
-        <div className="text-xs md:text-base">Time Remaining</div>
-        <div className="font-thin text-2xl md:text-5xl">00:55</div>
-      </div>
+      <CountdownTimer expiryTimestamp={time} />
     </div>
   );
 }
