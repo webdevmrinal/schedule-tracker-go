@@ -32,7 +32,7 @@ import { Loader2Icon, LoaderIcon } from "lucide-react";
 function App() {
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [quote, setQuote] = useState(getRandomQuote());
+  const [quote, setQuote] = useState("");
   const [date, setDate] = useState(new Date());
   const [scheduleItems, setScheduleItems] = useState([]);
   const now = new Date();
@@ -54,30 +54,22 @@ function App() {
     setLoading(true);
     const fetchScheduleItems = async () => {
       try {
-        const response = await databases.listDocuments(
-          DB_ID,
-          SCHEDULE_ITEMS_COLLECTION_ID
-        );
         const targetDate = new Date(
           Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
         );
-        const items = response.documents.filter((item) => {
-          const itemDate = new Date(item.date);
-          return (
-            itemDate.getUTCFullYear() === targetDate.getUTCFullYear() &&
-            itemDate.getUTCMonth() === targetDate.getUTCMonth() &&
-            itemDate.getUTCDate() === targetDate.getUTCDate()
-          );
-        });
-        setScheduleItems(items);
-        setLoading(false);
 
-        // const response = await databases.listDocuments(
-        //   DB_ID,
-        //   SCHEDULE_ITEMS_COLLECTION_ID,
-        //   // [Query.equal("date", date.toISOString().split("T")[0])]
-        // );
-        // setScheduleItems(response.documents);
+        // Convert the target date to ISO string and extract the date part
+        const targetDateString = targetDate.toISOString().split("T")[0];
+        console.log(targetDate.toISOString());
+
+        const response = await databases.listDocuments(
+          DB_ID,
+          SCHEDULE_ITEMS_COLLECTION_ID,
+          [Query.equal("date", targetDate.toISOString())]
+        );
+
+        setScheduleItems(response.documents);
+        setLoading(false);
       } catch (err) {
         setLoading(false);
         setQuote("Error fetching schedule.😟");
@@ -86,6 +78,7 @@ function App() {
     };
 
     fetchScheduleItems();
+    setQuote(getRandomQuote());
   }, [date]);
 
   console.log("scheduleItems", scheduleItems);
@@ -122,21 +115,26 @@ function App() {
         {getCurrentDateString()}
       </div>
 
-      {loading && (
-        <div className="flex gap-2">
-          <span>{<Loader2Icon className="animate-spin" />}</span>
-          <span>Fetching data</span>
-        </div>
-      )}
-      {!scheduleItems.length && !loading ? (
-        <div className="text-2xl">{quote}</div>
-      ) : (
-        <div className="mb-20 flex gap-8 max-h-[60vh] flex-col overflow-y-scroll md:overflow-visible md:flex-row scrollbar-thin">
-          {scheduleItems.map((item, index) => (
-            <SubjectCard key={item.$id} data={item} index={index} />
-          ))}
-        </div>
-      )}
+      <div>
+        {loading ? (
+          <div className="flex gap-2">
+            <span>{<Loader2Icon className="animate-spin" />}</span>
+            <span>Fetching data</span>
+          </div>
+        ) : (
+          <>
+            {!scheduleItems.length ? (
+              <div className="text-xl md:text-2xl text-center px-6 ">{quote}</div>
+            ) : (
+              <div className="mb-20 flex gap-8 max-h-[60vh] flex-col overflow-y-scroll md:overflow-visible md:flex-row scrollbar-thin">
+                {scheduleItems.map((item, index) => (
+                  <SubjectCard key={item.$id} data={item} index={index} />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
       <CountdownTimer expiryTimestamp={time} />
     </div>
