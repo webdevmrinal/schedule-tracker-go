@@ -27,9 +27,12 @@ import {
 } from "./lib/appwrite";
 import { getRandomQuote } from "./utils";
 import CountdownTimer from "./CountdownTimer";
+import { Loader2Icon, LoaderIcon } from "lucide-react";
 
 function App() {
   const [subjects, setSubjects] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [quote, setQuote] = useState(getRandomQuote());
   const [date, setDate] = useState(new Date());
   const [scheduleItems, setScheduleItems] = useState([]);
   const now = new Date();
@@ -48,6 +51,7 @@ function App() {
   } = useTimer({ time, onExpire: () => console.warn("Timer expired") });
 
   useEffect(() => {
+    setLoading(true);
     const fetchScheduleItems = async () => {
       try {
         const response = await databases.listDocuments(
@@ -66,6 +70,7 @@ function App() {
           );
         });
         setScheduleItems(items);
+        setLoading(false);
 
         // const response = await databases.listDocuments(
         //   DB_ID,
@@ -74,6 +79,8 @@ function App() {
         // );
         // setScheduleItems(response.documents);
       } catch (err) {
+        setLoading(false);
+        setQuote("Error fetching schedule.😟");
         console.error("Error fetching schedule items:", err);
       }
     };
@@ -115,14 +122,21 @@ function App() {
         {getCurrentDateString()}
       </div>
 
-      {!scheduleItems.length && (
-        <div className="text-2xl">{getRandomQuote()}</div>
+      {loading && (
+        <div className="flex gap-2">
+          <span>{<Loader2Icon className="animate-spin" />}</span>
+          <span>Fetching data</span>
+        </div>
       )}
-      <div className="mb-20 flex gap-8 max-h-[60vh] flex-col overflow-y-scroll md:overflow-visible md:flex-row scrollbar-thin">
-        {scheduleItems.map((item, index) => (
-          <SubjectCard key={item.$id} data={item} index={index} />
-        ))}
-      </div>
+      {!scheduleItems.length && !loading ? (
+        <div className="text-2xl">{quote}</div>
+      ) : (
+        <div className="mb-20 flex gap-8 max-h-[60vh] flex-col overflow-y-scroll md:overflow-visible md:flex-row scrollbar-thin">
+          {scheduleItems.map((item, index) => (
+            <SubjectCard key={item.$id} data={item} index={index} />
+          ))}
+        </div>
+      )}
 
       <CountdownTimer expiryTimestamp={time} />
     </div>
