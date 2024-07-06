@@ -35,6 +35,7 @@ function App() {
   const [quote, setQuote] = useState("");
   const [date, setDate] = useState(new Date());
   const [scheduleItems, setScheduleItems] = useState([]);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const now = new Date();
   const time = new Date();
   time.setHours(24, 0, 0, 0);
@@ -94,7 +95,7 @@ function App() {
 
   return (
     <div className="flex flex-col items-center justify-center">
-      <Popover>
+      <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
         <PopoverTrigger>
           <CalendarIcon />
         </PopoverTrigger>
@@ -105,6 +106,7 @@ function App() {
             onSelect={(date) => {
               if (!date) return;
               setDate(date);
+              setIsCalendarOpen(false);
             }}
             initialFocus
           />
@@ -124,7 +126,9 @@ function App() {
         ) : (
           <>
             {!scheduleItems.length ? (
-              <div className="text-xl md:text-2xl text-center px-6 ">{quote}</div>
+              <div className="text-xl md:text-2xl text-center px-6 ">
+                {quote}
+              </div>
             ) : (
               <div className="mb-20 flex gap-8 max-h-[60vh] flex-col overflow-y-scroll md:overflow-visible md:flex-row scrollbar-thin">
                 {scheduleItems.map((item, index) => (
