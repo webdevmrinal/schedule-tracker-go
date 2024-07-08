@@ -205,16 +205,22 @@ function CalendarIcon() {
 
 function SubjectCard({ data, index }) {
   return (
-    <Card className="w-[300px] text-center">
-      <CardHeader>
-        <CardTitle>{data.subjectId}</CardTitle>
+    <Card className="w-[300px] md:w-[400px] text-center cursor-pointer">
+      {/* <CardHeader>
+        <CardTitle className="text-2xl">Hi</CardTitle>
         <CardDescription>{`subject-${index + 1}`}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="font-extralight">{data.description}</p>
-        <p className="italic text-sm font-thin">{data.duration}</p>
+      </CardHeader> */}
+      <CardContent className="h-full flex items-center flex-col justify-center">
+        <p className=" text-3xl md:text-5xl font-extrabold pt-4">
+          {data.subjectId}
+        </p>
+        <p className="text-zinc-500 pb-4">{`subject-${index + 1}`}</p>
+        <p className="font-light text-xl md:text-2xl">
+          {data.description}
+        </p>
+        <p className="italic text-lg font-thin">{data.duration}</p>
         {data.quiz && (
-          <p className="my-4 text-orange-400 animate-pulse uppercase">
+          <p className="py-1 text-orange-400 animate-pulse uppercase">
             <p>weekly quiz today</p>
             <span>😍</span>
           </p>
